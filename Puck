@@ -1,0 +1,284 @@
+package testPac;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+public class Puck
+{
+      //Data We practice Data Hiding
+      
+      private int puckD;
+      private int xLoc, yLoc;
+      private  int xSpeed, ySpeed;
+      //private Color outerColor;
+      //private Color innerColor;
+      //private int frictionFactor = 3;
+      
+      private double PDFrictionFactor =  0.99;
+      private PongAirHockey  myTable;
+      // Image???
+      
+      private String puckFileName = "New_England_Patriots_003a73_db1b24.png~c200.png";
+      //private String puckFileName = "puck1.png";
+      //private String puckFileName = "canada150.png";
+      //private String puckFileName = "peterPuck.gif";
+      private Image puckImage;
+      
+      //added after MLK day for springyness
+      private double bounceFactor = 50.0;
+  
+      // Constructors
+      public Puck( int size, PongAirHockey t)
+      {
+          puckD = size;
+          myTable = t;
+          
+          xSpeed = 0;
+          ySpeed = 0;
+          xLoc= (int)( myTable.getWidth()/2 ) - (int)(puckD/2);
+          yLoc= (int)( myTable.getHeight()/2 ) - (int)(puckD/2);
+          //yLoc =  puckD/2;
+         //yLoc = myTable.getHeight() - puckD;
+          //outerColor = Color.BLACK;
+          //innerColor = new Color(232, 145, 16);
+          
+          
+          try {
+            
+             File pFile = new File(puckFileName);
+             puckImage = ImageIO.read(pFile);
+            
+          } catch ( IOException e) {
+            System.out.println("CATASTROPIC ERROR WITH PUCK READ -- RUN AWAY!!");
+            System.out.println(e);
+             
+          }
+        
+        
+      }
+  
+  
+  //Methods
+  
+      public void drawPuck(Graphics g){
+      
+           g.setColor(Color.GRAY);
+           g.fillOval(xLoc+5, yLoc+5, puckD, puckD);
+           g.drawImage(puckImage, xLoc, yLoc, puckD, puckD, myTable);
+        
+      }
+  
+  
+  
+      public void movePuck()
+      {
+        
+        checkLeftPaddle();
+        checkRightPaddle();
+        checkForGoal();
+        xLoc += xSpeed;
+        yLoc += ySpeed;
+        
+      
+ 
+        dealWithFrictionInAPDWay();
+        //You may have your bounce check here or it could be in a method like mine.
+        checkForBounces();
+        
+      }
+      
+      public void checkForGoal() {
+    	  
+    	  	
+    	  
+      }
+      
+        private void checkLeftPaddle()
+        {  
+                // Step 1 find out if puck is near left paddle
+                // Find the center of the puck
+                int puckCX = xLoc + (int)(puckD/2);
+                int puckCY = yLoc + (int)(puckD/2);
+                // Find the center of the paddle
+                int paddleCX =myTable.getLeftPaddle().getXLoc() + (int)(myTable.getLeftPaddle().getPDiameter()/2);
+                int paddleCY =myTable.getLeftPaddle().getYLoc() + (int)(myTable.getLeftPaddle().getPDiameter()/2);
+          
+                //Now Get Ready for P theorem
+                
+                double A = paddleCY - puckCY;
+                double B = paddleCX - puckCX;
+                
+                // for homework find C
+                double C = Math.sqrt((A*A) + (B*B));
+          
+               // Now adjust movement of the puck if it is colliding with the paddle
+                if(C < (puckD/2) + (myTable.getLeftPaddle().getPDiameter()/2))
+                {
+                  //System.out.println("There is a left paddle collision");
+                  
+                  double myArcSin = Math.asin(A/C);
+                  double myArcCos = Math.acos(B/C);
+                  
+                 // System.out.println("myArcSin is " + myArcSin);
+                  
+                  xSpeed -= bounceFactor * Math.cos(myArcCos);
+                  ySpeed -= bounceFactor * Math.sin(myArcSin);
+                
+                }    
+          
+        }
+        
+        private void checkRightPaddle()
+        {
+          
+            // Step 1 find out if puck is near left paddle
+            // Find the center of the puck
+            int puckCX = xLoc + (int)(puckD/2);
+            int puckCY = yLoc + (int)(puckD/2);
+            // Find the center of the paddle
+            int paddleCX =myTable.getRightPaddle().getXLoc() + (int)(myTable.getRightPaddle().getPDiameter()/2);
+            int paddleCY =myTable.getRightPaddle().getYLoc() + (int)(myTable.getRightPaddle().getPDiameter()/2);
+      
+            //Now Get Ready for P theorem
+            
+            double A = paddleCY - puckCY;
+            double B = paddleCX - puckCX;
+            
+            // for homework find C
+            double C = Math.sqrt((A*A) + (B*B));
+      
+           // Now adjust movement of the puck if it is colliding with the paddle
+            if(C < (puckD/2) + (myTable.getRightPaddle().getPDiameter()/2))
+            {
+              //System.out.println("There is a left paddle collision");
+              
+              double myArcSin = Math.asin(A/C);
+              double myArcCos = Math.acos(B/C);
+              
+             // System.out.println("myArcSin is " + myArcSin);
+              
+              xSpeed -= bounceFactor * Math.cos(myArcCos);
+              ySpeed -= bounceFactor * Math.sin(myArcSin);
+            
+            }    
+        	
+        }
+      
+      
+      
+      
+      
+      
+      public void dealWithFrictionInAPDWay(){
+            xSpeed = (int) (xSpeed * PDFrictionFactor);
+            ySpeed = (int) (ySpeed * PDFrictionFactor);
+   
+      }
+      
+      
+      //A couple of new accessor methods
+      public void setXSpeed(int newSpeed)
+      {
+          xSpeed = newSpeed;
+      }
+      
+      public void setYSpeed(int newSpeed)
+      {
+          ySpeed = newSpeed;
+      }
+      
+      
+    
+      
+      public void checkForBounces()
+      {
+        
+        // Left Side Bounce  -- test 1
+          if( xSpeed < 0 )   // if the puck is moving left...
+          {
+                  if(
+                      yLoc < myTable.getGoalYTop() - (int)(puckD/1.5) ||
+                      yLoc > myTable.getGoalYBottom()  - (int)(puckD/1.5)
+                      )
+                  {
+                             if(xLoc < myTable.getGoalWidth())
+                             {
+                               xLoc = myTable.getGoalWidth();
+                               xSpeed *= -1;
+                             }
+                     // if you get here it means the puck is going in the goal
+                  } else {
+                            if( xLoc < 0)
+                            {
+                              xLoc = 0;
+                              xSpeed *= -1;
+                            } 
+                  } 
+                  //RIGHT SIDE
+          } else if (xSpeed > 0) {      // meaning that its moving right
+              
+                //check the ylocs to see if puck is going into the goal or hitting the side walls
+                    if(
+                        yLoc < myTable.getGoalYTop() - (int)(puckD/1.5) ||
+                        yLoc > myTable.getGoalYBottom()  - (int)(puckD/1.5)
+                        )
+                    {
+                              //check for bounce on sides of the goal
+                              if(xLoc > myTable.getWidth()- myTable.getGoalWidth() - puckD)
+                              {
+                                xLoc = myTable.getWidth()- myTable.getGoalWidth() - puckD;
+                                xSpeed *= -1;
+                               
+                              } 
+                            
+                    } else {
+                                //check for bounce inside the goal
+                                if(xLoc > myTable.getWidth() - puckD )
+                                {
+                                  xLoc = myTable.getWidth() - puckD;
+                                  xSpeed *= -1;
+                                }
+                    }
+              }
+          
+          // check for top and bottom
+          
+          //TOP CHECK
+          if(ySpeed < 0){
+            
+            if(yLoc < 0)
+            {
+              yLoc = 0;
+              ySpeed *= -1;
+            }
+            
+            
+           // Bottom CHECK!!
+          } else if (ySpeed > 0){
+             if(yLoc > myTable.getHeight() - puckD)
+             {
+               yLoc = myTable.getHeight() - puckD;
+               ySpeed *= -1;
+             }
+            
+          }
+          
+          
+          
+      }
+      
+      public void reset() {
+    	  
+    	  	  xSpeed = 0;
+          ySpeed = 0;
+          xLoc= (int)( myTable.getWidth()/2 ) - (int)(puckD/2);
+          yLoc= (int)( myTable.getHeight()/2 ) - (int)(puckD/2);
+    	  
+      }
+
+}
